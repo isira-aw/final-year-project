@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telecom Tower Admin Panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">📡</span>
+          <div>
+            <div class="logo-title">Telecom Admin</div>
+            <div class="logo-sub">Control Panel</div>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="devices">
+          <span>🖥</span> Device Management
+        </a>
+        <a href="#" class="nav-item" data-section="create">
+          <span>➕</span> Create Device
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-config">
+          <label for="apiUrl">Backend URL</label>
+          <input type="text" id="apiUrl" value="http://localhost:8000" placeholder="http://localhost:8000" />
+          <label for="adminToken" style="margin-top:8px">Admin Token</label>
+          <input type="password" id="adminToken" placeholder="Enter admin token" />
+          <button class="btn btn-sm btn-secondary" onclick="saveConfig()" style="margin-top:8px;width:100%">Save Config</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <header class="topbar">
+        <h1 id="pageTitle">Device Management</h1>
+        <div class="topbar-actions">
+          <span id="statusBadge" class="badge badge-gray">Not configured</span>
+          <button class="btn btn-primary" onclick="refreshDevices()">⟳ Refresh</button>
+        </div>
+      </header>
+
+      <!-- Toast notifications -->
+      <div id="toast" class="toast hidden"></div>
+
+      <!-- Device Management Section -->
+      <section id="section-devices" class="section active">
+        <div class="section-header">
+          <h2>All Registered Devices</h2>
+          <span id="deviceCount" class="count-badge">0 devices</span>
+        </div>
+
+        <div id="deviceList" class="device-grid">
+          <div class="empty-state">
+            <div class="empty-icon">🖥</div>
+            <p>No devices found. Create one to get started.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Create Device Section -->
+      <section id="section-create" class="section hidden">
+        <div class="section-header">
+          <h2>Create New Device</h2>
+        </div>
+
+        <div class="form-card">
+          <p class="form-description">
+            Create a device entry in the system. After creation, you can toggle the license
+            status and the user can register using the device ID.
+          </p>
+
+          <form id="createDeviceForm" onsubmit="handleCreateDevice(event)">
+            <div class="form-group">
+              <label for="newDeviceId">Device ID</label>
+              <input
+                type="text"
+                id="newDeviceId"
+                placeholder="e.g. tower-001, site-abc"
+                required
+                pattern="[a-zA-Z0-9\-_]+"
+                title="Only letters, numbers, hyphens and underscores allowed"
+              />
+              <span class="input-hint">Use a unique identifier for this tower/device</span>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="createBtn">
+                ➕ Create Device
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
