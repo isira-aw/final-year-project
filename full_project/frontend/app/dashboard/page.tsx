@@ -66,6 +66,7 @@ export default function DashboardPage() {
   const logout = useCallback(() => {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('device_id');
+    localStorage.removeItem('role');
     router.push('/login');
   }, [router]);
 
@@ -99,8 +100,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('jwt_token');
+    const role = localStorage.getItem('role');
     const did = localStorage.getItem('device_id');
     if (!token) { router.push('/login'); return; }
+    // Admins should not be here — send them to their panel
+    if (role === 'admin') { router.push('/admin'); return; }
     setDeviceId(did || '');
     fetchAll();
     intervalRef.current = setInterval(fetchAll, 5000);

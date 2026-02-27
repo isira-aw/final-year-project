@@ -33,7 +33,7 @@ def register(payload: schemas.UserRegister, db: Session = Depends(get_db)):
         )
 
     hashed = auth.hash_password(payload.password)
-    user = models.User(device_id=payload.device_id, password_hash=hashed)
+    user = models.User(device_id=payload.device_id, password_hash=hashed, role="user")
     db.add(user)
     db.commit()
 
@@ -49,13 +49,14 @@ def login(payload: schemas.UserLogin, db: Session = Depends(get_db)):
             detail="Invalid device_id or password.",
         )
 
-    # Check license
-    device = db.query(models.Device).filter(models.Device.device_id == payload.device_id).first()
-    if device is None or not device.license_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Device license is not active. Contact admin.",
-        )
+    # Admins bypass the device/license check
+    if user.role != "admin":
+        device = db.query(models.Device).filter(models.Device.device_id == payload.device_id).first()
+        if device is None or not device.license_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Device license is not active. Contact admin.",
+            )
 
-    token = auth.create_access_token({"sub": user.device_id})
-    return schemas.TokenResponse(access_token=token)
+    token = auth.create_access_token({"sub": user.device_id, "role": user.role})
+    return schemas.TokenResponse(access_token=token, role=user.role)

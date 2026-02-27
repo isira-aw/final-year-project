@@ -35,14 +35,20 @@ async function apiFetch<T>(
 }
 
 // Auth
-export async function login(device_id: string, password: string) {
-  return apiFetch<{ access_token: string; token_type: string }>('/login', {
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  role: 'user' | 'admin';
+}
+
+export async function login(device_id: string, password: string): Promise<TokenResponse> {
+  return apiFetch<TokenResponse>('/login', {
     method: 'POST',
     body: JSON.stringify({ device_id, password }),
   });
 }
 
-export async function register(device_id: string, password: string) {
+export async function register(device_id: string, password: string): Promise<{ message: string }> {
   return apiFetch<{ message: string }>('/register', {
     method: 'POST',
     body: JSON.stringify({ device_id, password }),
@@ -118,5 +124,30 @@ export async function updateThresholds(data: Omit<Thresholds, 'id' | 'device_id'
   return apiFetch<Thresholds>('/dashboard/thresholds', {
     method: 'PUT',
     body: JSON.stringify(data),
+  }, true);
+}
+
+// ── Admin ──────────────────────────────────────────────────────────────────
+export interface Device {
+  id: string;
+  device_id: string;
+  license_active: boolean;
+  created_at: string;
+}
+
+export async function adminListDevices(): Promise<Device[]> {
+  return apiFetch<Device[]>('/admin/devices', {}, true);
+}
+
+export async function adminCreateDevice(device_id: string): Promise<Device> {
+  return apiFetch<Device>('/admin/create-device', {
+    method: 'POST',
+    body: JSON.stringify({ device_id }),
+  }, true);
+}
+
+export async function adminToggleLicense(device_id: string): Promise<Device> {
+  return apiFetch<Device>(`/admin/toggle-license/${encodeURIComponent(device_id)}`, {
+    method: 'PUT',
   }, true);
 }

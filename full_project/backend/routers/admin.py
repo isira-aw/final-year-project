@@ -13,7 +13,7 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 def create_device(
     payload: schemas.CreateDevice,
     db: Session = Depends(get_db),
-    _: bool = Depends(auth.verify_admin),
+    _: models.User = Depends(auth.get_admin_user),
 ):
     """Admin: Create a new device entry."""
     existing = db.query(models.Device).filter(models.Device.device_id == payload.device_id).first()
@@ -35,7 +35,7 @@ def create_device(
 def toggle_license(
     device_id: str,
     db: Session = Depends(get_db),
-    _: bool = Depends(auth.verify_admin),
+    _: models.User = Depends(auth.get_admin_user),
 ):
     """Admin: Toggle the license status of a device."""
     device = db.query(models.Device).filter(models.Device.device_id == device_id).first()
@@ -55,7 +55,7 @@ def toggle_license(
 @router.get("/devices", response_model=List[schemas.DeviceResponse])
 def list_devices(
     db: Session = Depends(get_db),
-    _: bool = Depends(auth.verify_admin),
+    _: models.User = Depends(auth.get_admin_user),
 ):
     """Admin: List all registered devices."""
     devices = db.query(models.Device).order_by(models.Device.created_at.desc()).all()

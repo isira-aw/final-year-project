@@ -72,10 +72,25 @@ def get_licensed_user(
     return current_user
 
 
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "admin-secret-token-change-in-production")
+def get_admin_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> models.User:
+    """Require a valid JWT whose role claim is 'admin'."""
+    payload = decode_token(credentials.credentials)
+    device_id: str = payload.get("sub")
+    role: str = payload.get("role", "user")
 
+    if device_id is None or role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required.",
+        )
 
-def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    if credentials.credentials != ADMIN_TOKEN:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid admin token")
-    return True
+    user = db.query(models.User).filter(models.User.device_id == device_id).first()
+    if user is None or user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required.",
+        )
+    return user

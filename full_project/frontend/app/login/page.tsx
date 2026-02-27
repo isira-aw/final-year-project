@@ -21,7 +21,9 @@ export default function LoginPage() {
       const data = await login(deviceId, password);
       localStorage.setItem('jwt_token', data.access_token);
       localStorage.setItem('device_id', deviceId);
-      router.push('/dashboard');
+      localStorage.setItem('role', data.role);
+      // Route based on role — admin → /admin, user → /dashboard
+      router.push(data.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -46,7 +48,10 @@ export default function LoginPage() {
 
         {/* Login Card */}
         <div className="card">
-          <h2 className="text-xl font-semibold text-white mb-6">Sign In to Dashboard</h2>
+          <h2 className="text-xl font-semibold text-white mb-6">Sign In</h2>
+          <p className="text-slate-400 text-sm mb-6">
+            Admins are routed to the admin panel. Device users are routed to the monitoring dashboard.
+          </p>
 
           {error && (
             <div className="bg-red-900/40 border border-red-500 text-red-300 rounded-lg px-4 py-3 mb-4 text-sm">
