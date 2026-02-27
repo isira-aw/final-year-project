@@ -1,9 +1,14 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# Load .env BEFORE any module that reads os.getenv() at import time
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, Base
+from database import _get_engine, Base
 import models  # noqa: F401 - ensure models are registered
 import ml_model
 import mqtt_client
@@ -20,7 +25,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Creating database tables...")
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=_get_engine())
     logger.info("Database tables ready.")
 
     logger.info("Loading ML model...")
